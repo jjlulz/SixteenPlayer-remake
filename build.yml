@@ -1,0 +1,20 @@
+name: Build deb
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Theos
+        run: |
+          brew install ldid dpkg make
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+          mkdir -p $HOME/theos/sdks
+          curl -sL https://github.com/theos/sdks/archive/master.tar.gz | tar -xz -C $HOME/theos/sdks --strip-components=1
+      - name: Build
+        run: gmake package FINALPACKAGE=1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SixteenPlayer-deb
+          path: packages/*.deb
